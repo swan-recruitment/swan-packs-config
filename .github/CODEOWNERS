@@ -1,8 +1,8 @@
 # Ownership for shared config (review required)
-.github/**           @your-org/infra @your-org/maintainers
-CONTRIBUTING.md      @your-org/infra
-SECURITY.md          @your-org/infra
+.github/**           @swan-recruitment/infra @swan-recruitment/maintainers
+CONTRIBUTING.md      @swan-recruitment/infra
+SECURITY.md          @swan-recruitment/infra
 
 # Optional: per-language owners (uncomment / edit as you grow the config repo)
-# packs/python/**     @your-org/python-core
-# packs/node-web/**   @your-org/web-core
+# packs/python/**     @swan-recruitment/python-core
+# packs/node-web/**   @swan-recruitment/web-core
