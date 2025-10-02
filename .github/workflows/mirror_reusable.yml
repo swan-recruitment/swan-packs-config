@@ -1,0 +1,70 @@
+name: Mirror reusable (sync config into a caller repo)
+on:
+  workflow_call:
+    inputs:
+      source_repo:
+        description: "Repo to pull config from (e.g., org/swan-packs-config)"
+        required: true
+        type: string
+      source_ref:
+        description: "Branch or tag to pull from"
+        required: false
+        default: "main"
+        type: string
+      include_globs:
+        description: "Newline-delimited patterns to include"
+        required: false
+        default: |
+          .github/**
+      pr_branch:
+        description: "Branch name for the PR"
+        default: "chore/sync-packs"
+        type: string
+      pr_title:
+        description: "Title for the generated PR"
+        default: "chore: sync packs config"
+        type: string
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@v4
+
+      - name: Fetch source config
+        run: |
+          git clone --depth=1 https://github.com/${{ inputs.source_repo }} tmp-config
+          printf "%s\n" ${{ inputs.include_globs }} > include.txt
+
+          # Build rsync include rules from newline-delimited input
+          while IFS= read -r line; do
+            echo "--include='${line}'" >> rsync_args.txt
+          done < include.txt
+
+          # Always exclude everything else
+          echo "--exclude='*'" >> rsync_args.txt
+
+          # shellcheck disable=SC2046
+          eval rsync -av --delete $(cat rsync_args.txt | tr '\n' ' ') tmp-config/ .
+
+          rm -rf tmp-config include.txt rsync_args.txt
+
+      - name: Commit changes
+        run: |
+          git config user.name "config-sync-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git checkout -B "${{ inputs.pr_branch }}"
+          git add -A
+          git commit -m "${{ inputs.pr_title }}" || echo "No changes"
+
+      - name: Open PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: ${{ inputs.pr_branch }}
+          title: ${{ inputs.pr_title }}
+          commit-message: ${{ inputs.pr_title }}
+          delete-branch: true

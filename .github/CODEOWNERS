@@ -1,0 +1,8 @@
+# Ownership for shared config (review required)
+.github/**           @your-org/infra @your-org/maintainers
+CONTRIBUTING.md      @your-org/infra
+SECURITY.md          @your-org/infra
+
+# Optional: per-language owners (uncomment / edit as you grow the config repo)
+# packs/python/**     @your-org/python-core
+# packs/node-web/**   @your-org/web-core
